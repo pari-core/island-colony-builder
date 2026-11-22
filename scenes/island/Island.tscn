@@ -1,0 +1,72 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/island_terrain.gd" id="1_terrain"]
+[ext_resource type="Script" path="res://scripts/island_decorations.gd" id="2_decor"]
+[ext_resource type="Shader" path="res://scenes/island/terrain.gdshader" id="3_terrain_shader"]
+[ext_resource type="Shader" path="res://scenes/island/water.gdshader" id="4_water_shader"]
+[ext_resource type="Texture2D" path="res://assets/textures/aerial_grass_rock/aerial_grass_rock_diff_2k.jpg" id="5_grass_d"]
+[ext_resource type="Texture2D" path="res://assets/textures/aerial_grass_rock/aerial_grass_rock_nor_gl_2k.jpg" id="6_grass_n"]
+[ext_resource type="Texture2D" path="res://assets/textures/aerial_grass_rock/aerial_grass_rock_arm_2k.jpg" id="7_grass_a"]
+[ext_resource type="Texture2D" path="res://assets/textures/aerial_beach_01/aerial_beach_01_diff_2k.jpg" id="8_sand_d"]
+[ext_resource type="Texture2D" path="res://assets/textures/aerial_beach_01/aerial_beach_01_nor_gl_2k.jpg" id="9_sand_n"]
+[ext_resource type="Texture2D" path="res://assets/textures/aerial_beach_01/aerial_beach_01_arm_2k.jpg" id="10_sand_a"]
+[ext_resource type="Texture2D" path="res://assets/textures/aerial_rocks_02/aerial_rocks_02_diff_2k.jpg" id="11_rock_d"]
+[ext_resource type="Texture2D" path="res://assets/textures/aerial_rocks_02/aerial_rocks_02_nor_gl_2k.jpg" id="12_rock_n"]
+[ext_resource type="Texture2D" path="res://assets/textures/aerial_rocks_02/aerial_rocks_02_arm_2k.jpg" id="13_rock_a"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_terrain"]
+shader = ExtResource("3_terrain_shader")
+shader_parameter/grass_albedo = ExtResource("5_grass_d")
+shader_parameter/grass_normal = ExtResource("6_grass_n")
+shader_parameter/grass_arm = ExtResource("7_grass_a")
+shader_parameter/sand_albedo = ExtResource("8_sand_d")
+shader_parameter/sand_normal = ExtResource("9_sand_n")
+shader_parameter/sand_arm = ExtResource("10_sand_a")
+shader_parameter/rock_albedo = ExtResource("11_rock_d")
+shader_parameter/rock_normal = ExtResource("12_rock_n")
+shader_parameter/rock_arm = ExtResource("13_rock_a")
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_ripple_a"]
+seed = 11
+frequency = 0.02
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_ripple_a"]
+width = 512
+height = 512
+seamless = true
+as_normal_map = true
+bump_strength = 6.0
+noise = SubResource("FastNoiseLite_ripple_a")
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_ripple_b"]
+seed = 23
+frequency = 0.012
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_ripple_b"]
+width = 512
+height = 512
+seamless = true
+as_normal_map = true
+bump_strength = 6.0
+noise = SubResource("FastNoiseLite_ripple_b")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_water"]
+shader = ExtResource("4_water_shader")
+shader_parameter/ripple_a = SubResource("NoiseTexture2D_ripple_a")
+shader_parameter/ripple_b = SubResource("NoiseTexture2D_ripple_b")
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_water"]
+size = Vector2(3200, 3200)
+material = SubResource("ShaderMaterial_water")
+
+[node name="Island" type="Node3D"]
+
+[node name="Terrain" type="MeshInstance3D" parent="."]
+material_override = SubResource("ShaderMaterial_terrain")
+script = ExtResource("1_terrain")
+
+[node name="Water" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_water")
+
+[node name="Decorations" type="Node3D" parent="."]
+script = ExtResource("2_decor")

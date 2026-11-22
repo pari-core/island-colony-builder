@@ -1,0 +1,254 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/island/Island.tscn" id="1_island"]
+[ext_resource type="Script" path="res://scripts/camera_controller.gd" id="2_camera"]
+[ext_resource type="Script" path="res://scripts/map_manager.gd" id="3_map"]
+[ext_resource type="Script" path="res://scripts/building_manager.gd" id="4_buildings"]
+[ext_resource type="Script" path="res://scripts/resource_manager.gd" id="5_resources"]
+[ext_resource type="Script" path="res://scripts/resource_bar.gd" id="6_resource_bar"]
+[ext_resource type="Script" path="res://scripts/worker_manager.gd" id="7_workers"]
+[ext_resource type="Script" path="res://scripts/selection_panel.gd" id="8_selection"]
+[ext_resource type="Script" path="res://scripts/population_manager.gd" id="9_population"]
+[ext_resource type="Script" path="res://scripts/event_manager.gd" id="10_events"]
+[ext_resource type="Script" path="res://scripts/event_panel.gd" id="11_event_panel"]
+[ext_resource type="Script" path="res://scripts/research_manager.gd" id="12_research"]
+[ext_resource type="Script" path="res://scripts/event_effects.gd" id="13_effects"]
+[ext_resource type="Script" path="res://scripts/civilian_manager.gd" id="14_civilians"]
+[ext_resource type="Script" path="res://scripts/path_grid.gd" id="15_paths"]
+[ext_resource type="Script" path="res://scripts/game_state_manager.gd" id="16_game"]
+[ext_resource type="Script" path="res://scripts/goal_panel.gd" id="17_goal"]
+[ext_resource type="Script" path="res://scripts/controller_menu.gd" id="20_controller"]
+[ext_resource type="Script" path="res://scripts/crop_manager.gd" id="21_crops"]
+[ext_resource type="Script" path="res://scripts/popup_manager.gd" id="22_popups"]
+[ext_resource type="Script" path="res://scripts/save_manager.gd" id="23_saves"]
+[ext_resource type="Script" path="res://scripts/time_manager.gd" id="24_time"]
+[ext_resource type="Script" path="res://scripts/construction_manager.gd" id="25_construction"]
+[ext_resource type="Script" path="res://scripts/drought_mission.gd" id="26_drought"]
+[ext_resource type="Script" path="res://scripts/story_box.gd" id="27_story"]
+[ext_resource type="Script" path="res://scripts/disease_mission.gd" id="28_disease"]
+[ext_resource type="Script" path="res://scripts/event_stories.gd" id="29_stories"]
+[ext_resource type="Script" path="res://scripts/migration_boat.gd" id="30_boat"]
+[ext_resource type="Script" path="res://scripts/day_night.gd" id="31_daynight"]
+[ext_resource type="Script" path="res://scripts/roads.gd" id="32_roads"]
+[ext_resource type="Script" path="res://scripts/animals.gd" id="33_animals"]
+[ext_resource type="Script" path="res://scripts/island_details.gd" id="34_details"]
+[ext_resource type="Script" path="res://scripts/hud.gd" id="35_hud"]
+[ext_resource type="Script" path="res://scripts/far_islands.gd" id="36_far"]
+[ext_resource type="Script" path="res://scripts/ground_cover.gd" id="37_cover"]
+[ext_resource type="Script" path="res://scripts/gold_puzzle.gd" id="38_puzzle"]
+[ext_resource type="Script" path="res://scripts/screens.gd" id="39_screens"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_main"]
+sky_top_color = Color(0.25, 0.47, 0.78, 1)
+sky_horizon_color = Color(0.72, 0.8, 0.88, 1)
+ground_bottom_color = Color(0.2, 0.24, 0.28, 1)
+ground_horizon_color = Color(0.72, 0.8, 0.88, 1)
+
+[sub_resource type="Sky" id="Sky_main"]
+sky_material = SubResource("ProceduralSkyMaterial_main")
+
+[sub_resource type="Environment" id="Environment_main"]
+background_mode = 2
+sky = SubResource("Sky_main")
+ambient_light_source = 3
+reflected_light_source = 2
+tonemap_mode = 3
+ssao_enabled = true
+
+[node name="Main" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_main")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.8660254, -0.25, 0.4330127, 0, 0.8660254, 0.5, -0.5, -0.4330127, 0.75, 0, 30, 0)
+light_energy = 1.2
+shadow_enabled = true
+directional_shadow_max_distance = 720.0
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(0.7071, 0.4522, -0.5437, 0, 0.7689, 0.6395, 0.7071, -0.4522, 0.5437, -219.2, 238.8, 201.2)
+current = true
+fov = 40.0
+far = 2500.0
+script = ExtResource("2_camera")
+
+[node name="Island" parent="." instance=ExtResource("1_island")]
+
+[node name="MapManager" type="Node3D" parent="."]
+script = ExtResource("3_map")
+
+[node name="Roads" type="Node" parent="."]
+script = ExtResource("32_roads")
+
+[node name="Animals" type="Node3D" parent="."]
+script = ExtResource("33_animals")
+
+[node name="IslandDetails" type="Node3D" parent="."]
+script = ExtResource("34_details")
+
+[node name="FarIslands" type="Node3D" parent="."]
+script = ExtResource("36_far")
+
+[node name="GroundCover" type="Node3D" parent="."]
+script = ExtResource("37_cover")
+
+[node name="PathGrid" type="Node" parent="."]
+script = ExtResource("15_paths")
+
+[node name="TimeManager" type="Node" parent="."]
+script = ExtResource("24_time")
+
+[node name="ResourceManager" type="Node" parent="."]
+script = ExtResource("5_resources")
+
+[node name="BuildingManager" type="Node3D" parent="."]
+script = ExtResource("4_buildings")
+
+[node name="WorkerManager" type="Node3D" parent="."]
+script = ExtResource("7_workers")
+
+[node name="CivilianManager" type="Node3D" parent="."]
+script = ExtResource("14_civilians")
+
+[node name="PopulationManager" type="Node" parent="."]
+script = ExtResource("9_population")
+
+[node name="ResearchManager" type="Node" parent="."]
+script = ExtResource("12_research")
+
+[node name="EventManager" type="Node" parent="."]
+script = ExtResource("10_events")
+
+[node name="EventEffects" type="Node3D" parent="."]
+script = ExtResource("13_effects")
+
+[node name="ConstructionManager" type="Node3D" parent="."]
+script = ExtResource("25_construction")
+
+[node name="CropManager" type="Node3D" parent="."]
+script = ExtResource("21_crops")
+
+[node name="Popups" type="Node3D" parent="."]
+script = ExtResource("22_popups")
+
+[node name="DroughtMission" type="Node" parent="."]
+script = ExtResource("26_drought")
+
+[node name="DiseaseMission" type="Node3D" parent="."]
+script = ExtResource("28_disease")
+
+[node name="MigrationBoat" type="Node3D" parent="."]
+script = ExtResource("30_boat")
+
+[node name="DayNight" type="Node" parent="."]
+script = ExtResource("31_daynight")
+
+[node name="EventStories" type="Node" parent="."]
+script = ExtResource("29_stories")
+
+[node name="GameStateManager" type="Node" parent="."]
+script = ExtResource("16_game")
+
+[node name="SaveManager" type="Node" parent="."]
+script = ExtResource("23_saves")
+
+[node name="ControllerMenu" type="Node" parent="."]
+script = ExtResource("20_controller")
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="ResourcePanel" type="PanelContainer" parent="UI"]
+anchor_right = 1.0
+offset_bottom = 56.0
+grow_horizontal = 2
+
+[node name="ResourceBar" type="Label" parent="UI/ResourcePanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 21
+horizontal_alignment = 1
+script = ExtResource("6_resource_bar")
+
+[node name="GoalLabel" type="Label" parent="UI"]
+offset_left = 24.0
+offset_top = 64.0
+offset_right = 1100.0
+offset_bottom = 220.0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 24
+script = ExtResource("17_goal")
+
+[node name="SelectionLabel" type="Label" parent="UI"]
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = -190.0
+offset_right = 1000.0
+offset_bottom = -24.0
+grow_vertical = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 28
+vertical_alignment = 2
+script = ExtResource("8_selection")
+
+[node name="EventLabel" type="Label" parent="UI"]
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -1100.0
+offset_top = 230.0
+offset_right = -24.0
+offset_bottom = 420.0
+grow_horizontal = 0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 26
+horizontal_alignment = 2
+script = ExtResource("11_event_panel")
+
+[node name="PlacementLabel" type="Label" parent="UI"]
+visible = false
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -700.0
+offset_top = 72.0
+offset_right = 700.0
+offset_bottom = 208.0
+grow_horizontal = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 30
+horizontal_alignment = 1
+
+[node name="HUD" type="Control" parent="UI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("35_hud")
+
+[node name="GoldPuzzle" type="Control" parent="UI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("38_puzzle")
+
+[node name="Screens" type="Control" parent="UI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("39_screens")
+
+[node name="StoryBox" type="Control" parent="UI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("27_story")

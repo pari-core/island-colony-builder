@@ -1,0 +1,8 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://assets/characters/industrial_safety_worker_walking.glb" id="1_model"]
+
+[node name="Worker" type="Node3D"]
+
+[node name="Model" parent="." instance=ExtResource("1_model")]
+transform = Transform3D(0.947893, 0, 0, 0, 0.947893, 0, 0, 0, 0.947893, 0.003, 0.901, 0.001)

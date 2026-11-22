@@ -1,0 +1,8 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://assets/kaykit/detail_rocks.glb" id="1_m"]
+
+[node name="Quarry" type="Node3D"]
+
+[node name="Model" parent="." instance=ExtResource("1_m")]
+transform = Transform3D(10.0411, 0, 0, 0, 10.0411, 0, 0, 0, 10.0411, -0.112, 0.508, 1.644)

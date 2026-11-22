@@ -1,0 +1,11 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/terracotta_roofs.gd" id="2_roof"]
+
+[ext_resource type="PackedScene" path="res://assets/kaykit/watchtower.glb" id="1_m"]
+
+[node name="ResearchLab" type="Node3D"]
+script = ExtResource("2_roof")
+
+[node name="Model" parent="." instance=ExtResource("1_m")]
+transform = Transform3D(8.7561, 0, 0, 0, 8.7561, 0, 0, 0, 8.7561, -0.073, 0.225, 0.205)

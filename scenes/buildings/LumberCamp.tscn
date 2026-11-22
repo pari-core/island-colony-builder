@@ -1,0 +1,11 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/terracotta_roofs.gd" id="2_roof"]
+
+[ext_resource type="PackedScene" path="res://assets/kaykit/lumbermill.glb" id="1_m"]
+
+[node name="LumberCamp" type="Node3D"]
+script = ExtResource("2_roof")
+
+[node name="Model" parent="." instance=ExtResource("1_m")]
+transform = Transform3D(9.8682, 0, 0, 0, 9.8682, 0, 0, 0, 9.8682, 0.045, 0.155, -0.218)

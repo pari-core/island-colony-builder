@@ -1,0 +1,8 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://assets/environment/oak_tree.glb" id="1_oak"]
+
+[node name="Oak" type="Node3D"]
+
+[node name="Model" parent="." instance=ExtResource("1_oak")]
+transform = Transform3D(0.000312, 0, 0, 0, 0.000312, 0, 0, 0, 0.000312, 7.825, 14.194, -0.12)
