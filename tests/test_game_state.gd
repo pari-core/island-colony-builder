@@ -48,8 +48,7 @@ func fill_storage() -> void:
 
 
 func end_text() -> String:
-	var label: Label = game.get_node_or_null("EndScreen/Text")
-	return "" if label == null else label.text
+	return game.get_end_text()
 
 
 func run() -> void:
@@ -59,7 +58,7 @@ func run() -> void:
 	await new_game()
 	await process_frame
 	check("starts in play", game.get_state() == S.PLAYING and not paused and end_text() == "")
-	check("goal line shows the target and progress", goal.text == "Goal: 24 people (now 10) and happiness 70 (now 60)\nOr: build all 3 landmarks (0 done): Lighthouse, Harbour, Town Hall\nBoth need all 5 events faced first (0 so far)\nHOMES FULL (10/10): nobody new will join. Build a House (20 Wood, 10 Stone) for 4 more people", goal.text)
+	check("goal line shows the target and progress", goal.text == "Goal: 24 people (now 10) and happiness 70 (now 60)\nOr: build all 3 landmarks (0 done): Lighthouse, Harbour, Town Hall\nBoth need all 6 events faced first (0 so far)\nHOMES FULL (10/10): nobody new will join. Build a House (20 Wood, 10 Stone) for 4 more people", goal.text)
 	check("score: 10 people x 10 + happiness 60 = 160", game.get_score() == 160, str(game.get_score()))
 
 	# Lose by starvation: 6 hungry cycles in a row.
@@ -180,11 +179,11 @@ func run() -> void:
 	await process_frame
 	check("3rd cycle, but no event has been faced: not won yet", game.get_state() == S.PLAYING and game.get_win_cycles() == 3 and goal.text.contains("Goal reached: keep it until every event has been faced"), goal.text)
 	var events: EventManager = game.get_node("../EventManager")
-	for type: EventManager.Type in [EventManager.Type.DISCOVERY, EventManager.Type.DROUGHT, EventManager.Type.TRADE, EventManager.Type.DISEASE]:
+	for type: EventManager.Type in [EventManager.Type.DISCOVERY, EventManager.Type.DROUGHT, EventManager.Type.ACCIDENT, EventManager.Type.DISEASE, EventManager.Type.STORM]:
 		events._faced[type] = true
 	r.add(F, 200)
 	pop.upkeep()
-	check("four of the five events faced: still not won", events.get_faced_count() == 4 and game.get_state() == S.PLAYING)
+	check("five of the six events faced: still not won", events.get_faced_count() == 5 and game.get_state() == S.PLAYING)
 	events._faced[EventManager.Type.MIGRATION] = true
 	r.add(F, 200)
 	pop.upkeep()

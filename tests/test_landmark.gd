@@ -176,14 +176,14 @@ func run() -> void:
 	check("all three stand, but no event has been faced: not won yet", game.get_landmarks_built() == 3 and game.get_state() == S.PLAYING)
 	await process_frame
 	await process_frame
-	check("the goal panel says what is still missing", goal.text.contains("(3 done)") and goal.text.contains("Both need all 5 events faced first (0 so far)"), goal.text.replace("\n", " / "))
+	check("the goal panel says what is still missing", goal.text.contains("(3 done)") and goal.text.contains("Both need all 6 events faced first (0 so far)"), goal.text.replace("\n", " / "))
 	var events: EventManager = main.get_node("EventManager")
 	for type: EventManager.Type in EventManager.ORDER:
 		events._faced[type] = true
 	main.get_node("PopulationManager").upkeep()
 	check("once all five events are faced, the next upkeep cycle wins the game", game.get_state() == S.WON and main.get_tree().paused and game.get_reason() == "The colony raised all 3 landmarks: Lighthouse, Harbour, Town Hall.", game.get_reason())
-	var end_label: Label = game.get_node_or_null("EndScreen/Text")
-	check("the end screen shows the win", end_label != null and end_label.text.contains("YOU WIN") and end_label.text.contains("3 landmarks"), "" if end_label == null else end_label.text.replace("\n", " / "))
+	var end_text := game.get_end_text()
+	check("the end screen shows the win", game.has_node("EndScreen/Confetti") and end_text.contains("YOU WIN") and end_text.contains("3 landmarks"), end_text.replace("\n", " / "))
 	check("the builders are free again", workers.get_idle_count() == 6)
 	game.keep_playing()
 	check("N carries on in free play", game.get_state() == S.FREE_PLAY and not main.get_tree().paused)

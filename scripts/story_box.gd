@@ -20,12 +20,11 @@ const SUN_COLOUR := Color(1.0, 0.78, 0.25)
 # Tests that are not about stories switch them off here, so nothing pauses
 # them. It is static, so it covers every scene a test loads.
 static var enabled := true
-# v2 (team request, 2026-11-23: "event details should be short"): a story is
-# cut down to one or two cards: the first sentence of its opening, then only the
-# pages that carry instructions or results (their first line is in capitals,
-# such as "DISEASE OUTBREAK!") and the last page. Tests switch this off to check
-# the full text.
+# Stories are cut down to one short card (see shorten()). Tests switch this off
+# to check the full text.
 static var short := true
+const MAX_LINES := 2             # Lines kept under each heading.
+const SHORT_PAGE := 120          # A page this short is kept whole.
 
 # Stories waiting their turn. Each is { "title": String, "pages": Array, "icon": String }.
 var _queue: Array[Dictionary] = []
@@ -72,7 +71,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 # Tells a story. If one is already being told, this one waits its turn.
-# icon is the small picture beside the text: "sun", "cross", "star", "coin" or "boat".
+# icon is the small picture beside the text: "sun", "cross", "star", "coin", "boat", "hammer" or "cloud".
 func tell(title: String, pages: Array, icon := "sun") -> void:
 	if pages.is_empty() or not enabled:
 		return
@@ -83,21 +82,25 @@ func tell(title: String, pages: Array, icon := "sun") -> void:
 
 # The short version of a story (see "short" above).
 static func shorten(pages: Array) -> Array:
-	if pages.size() <= 2:
+	# v3 (team request, 2026-11-23: "reduce the message content when an event
+	# comes"): ONE card. It holds only the pages that tell the player something
+	# (a heading in capitals, such as "DISEASE OUTBREAK!"), at most the last two,
+	# each cut to its heading and first MAX_LINES lines. A story with no such page
+	# keeps just the first sentence of its last page.
+	var headed: Array[String] = []
+	for page in pages:
+		var lines := str(page).split("\n")
+		if lines[0] == lines[0].to_upper() and lines[0].length() > 3:
+			headed.append("\n".join(lines.slice(0, MAX_LINES + 1)))
+	if not headed.is_empty():
+		return ["\n\n".join(headed.slice(maxi(headed.size() - 2, 0)))]
+	if pages.is_empty():
 		return pages
-	var first := str(pages[0])
-	var stop := first.find(". ")
-	var intro := first if stop < 0 else first.substr(0, stop + 1)
-	var kept: Array = []
-	for n in range(1, pages.size()):
-		var text := str(pages[n])
-		var heading := text.split("\n")[0]
-		if heading == heading.to_upper() and heading.length() > 3 or n == pages.size() - 1:
-			kept.append(text)
-	if kept.is_empty():
-		return [intro]
-	kept[0] = intro + "\n\n" + str(kept[0])
-	return kept.slice(maxi(kept.size() - 2, 0)) if kept.size() > 2 else kept
+	var last := str(pages[-1])
+	var stop := last.find(". ")
+	if last.length() <= SHORT_PAGE or stop < 0:
+		return [last]
+	return [last.substr(0, stop + 1)]
 
 
 func is_open() -> bool:
@@ -259,6 +262,20 @@ func _draw_icon(on: Control) -> void:
 			on.draw_line(centre + Vector2(0, 12), centre + Vector2(0, -34), Color(0.3, 0.18, 0.08), 4.0)
 			on.draw_colored_polygon(PackedVector2Array([centre + Vector2(4, -32), centre + Vector2(30, 6), centre + Vector2(4, 6)]), Color(0.97, 0.95, 0.9))
 			on.draw_colored_polygon(PackedVector2Array([centre + Vector2(-4, -24), centre + Vector2(-24, 6), centre + Vector2(-4, 6)]), Color(0.9, 0.87, 0.8))
+			return
+		"cloud":   # A grey storm cloud with rain.
+			on.draw_circle(centre + Vector2(-12, -6), 16.0, Color(0.55, 0.58, 0.64))
+			on.draw_circle(centre + Vector2(10, -10), 20.0, Color(0.6, 0.63, 0.69))
+			on.draw_rect(Rect2(centre + Vector2(-28, -6), Vector2(56, 16)), Color(0.55, 0.58, 0.64))
+			for i in 4:
+				var x := -18.0 + i * 12.0
+				on.draw_line(centre + Vector2(x, 16), centre + Vector2(x - 5, 32), Color(0.3, 0.5, 0.85), 3.0, true)
+			return
+		"hammer":  # A hammer on a brick: a building accident and its repair.
+			on.draw_circle(centre, 34.0, Color(0.97, 0.95, 0.9))
+			on.draw_rect(Rect2(centre + Vector2(-22, 10), Vector2(44, 16)), Color(0.72, 0.36, 0.24))
+			on.draw_line(centre + Vector2(-14, 4), centre + Vector2(14, -22), Color(0.45, 0.28, 0.12), 6.0, true)
+			on.draw_colored_polygon(PackedVector2Array([centre + Vector2(4, -34), centre + Vector2(24, -14), centre + Vector2(18, -8), centre + Vector2(-2, -28)]), Color(0.4, 0.42, 0.46))
 			return
 	# Otherwise a burning sun: the picture for a drought.
 	for i in 12:

@@ -372,7 +372,7 @@ func _build_toolbar() -> void:
 		var which: String = entry[2]
 		button.pressed.connect(func() -> void:
 			if which == "puzzle":
-				get_node("../GoldPuzzle").open()
+				get_node("../EventPuzzles").play_next()
 			else:
 				get_node("../Screens").open(which))
 		bar.add_child(button)
@@ -404,16 +404,17 @@ func _build_puzzle_button() -> void:
 	var paper := _box(Color(0.95, 0.89, 0.76, 0.96), 12, Color(0.45, 0.29, 0.14))
 	for state in ["normal", "hover", "pressed", "disabled"]:
 		_puzzle_button.add_theme_stylebox_override(state, paper)
-	_puzzle_button.pressed.connect(func() -> void: get_node("../GoldPuzzle").open())
+	_puzzle_button.pressed.connect(func() -> void: get_node("../EventPuzzles").play_next())
 	add_child(_puzzle_button)
 	_pin(_puzzle_button, Control.PRESET_CENTER_LEFT, Vector2(20, 0))
 
 
 func _update_puzzle_button() -> void:
-	var puzzle: GoldPuzzle = get_node("../GoldPuzzle")
-	_puzzle_button.disabled = not puzzle.is_ready()
-	_puzzle_button.text = "Puzzle" if puzzle.is_ready() else "%d s" % ceili(puzzle.get_cooldown())
-	_puzzle_button.tooltip_text = "Memory puzzle: win gold" if puzzle.is_ready() else "Next puzzle in %d s" % ceili(puzzle.get_cooldown())
+	# One puzzle before each event, played whenever the player likes (event_puzzles.gd).
+	var puzzles: EventPuzzles = get_node("../EventPuzzles")
+	_puzzle_button.disabled = not puzzles.can_play()
+	_puzzle_button.text = "Puzzle" if puzzles.can_play() else "Played"
+	_puzzle_button.tooltip_text = "%s: earn %s, before the %s" % [puzzles.get_next_title(), puzzles.get_next_reward(), EventManager.NAMES[get_node("../../EventManager").get_next_type()]] if puzzles.can_play() else "Played. The next puzzle unlocks when the next event starts."
 
 
 # ---------------------------------------------------------------- Other labels

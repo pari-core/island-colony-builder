@@ -61,9 +61,9 @@ func run() -> void:
 
 	# ------------------------------------------------------------ It appears at sea
 	events.trigger(EventManager.Type.MIGRATION)
-	var newcomers := workers.get_workers().slice(6, 8)
+	var newcomers := workers.get_workers().slice(6, 10)
 	check("a migration puts the ship far out at sea, 260 m off the beach", boat.visible and boat.get_stage() == S.SAILING_IN and absf(boat.position.x - (beach.x + 260.0)) < 0.01, str(boat.position))
-	check("the two newcomers are aboard", boat.get_passengers().size() == 2 and newcomers[0].aboard and newcomers[1].aboard)
+	check("the four newcomers are aboard", boat.get_passengers().size() == 4 and newcomers.all(func(n: Worker) -> bool: return n.aboard))
 	check("they stand on the deck, not on the beach", absf(newcomers[0].model.position.x - boat.position.x) < 3.0 and newcomers[0].model.position.y > boat.position.y + 1.0, str(newcomers[0].model.position))
 	check("the story opens and pauses the game", story.is_open() and paused)
 	var waiting_at := boat.position.x

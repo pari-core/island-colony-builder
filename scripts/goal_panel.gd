@@ -31,7 +31,7 @@ func _process(_delta: float) -> void:
 			text += "\nHAPPINESS IS 0: people are leaving the colony"
 		return
 	var lines: Array[String] = ["Goal: %d people (now %d) and happiness %d (now %d)" % [
-		GameStateManager.WIN_POPULATION, _population.get_population(),
+		QuickGame.win_population(), _population.get_population(),
 		GameStateManager.WIN_HAPPINESS, _population.get_happiness(),
 	]]
 	lines.append(_landmark_line())
@@ -47,7 +47,7 @@ func _process(_delta: float) -> void:
 		])
 	var held := _game.get_win_cycles()
 	if held > 0:
-		var seconds := maxi(0, int((GameStateManager.WIN_CYCLES - held) * PopulationManager.UPKEEP_SECONDS))
+		var seconds := maxi(0, int((QuickGame.win_cycles() - held) * PopulationManager.UPKEEP_SECONDS))
 		lines.append("Goal reached: hold it for %d more seconds to win" % seconds if seconds > 0 else "Goal reached: keep it until every event has been faced")
 	if _game.get_starvation_seconds_left() >= 0:
 		lines.append("STARVING: get food, or the colony is lost in %d s" % _game.get_starvation_seconds_left())
@@ -69,4 +69,6 @@ func _landmark_line() -> String:
 			parts.append("%s %d%%" % [landmark_name, int(_construction.get_progress(plot) * 100.0)])
 		else:
 			parts.append("%s done" % landmark_name)
+	if QuickGame.on:
+		return "Or: build any 1 landmark (%d done): %s" % [_game.get_landmarks_built(), ", ".join(parts)]
 	return "Or: build all %d landmarks (%d done): %s" % [parts.size(), _game.get_landmarks_built(), ", ".join(parts)]

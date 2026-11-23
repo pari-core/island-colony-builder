@@ -14,7 +14,7 @@ func _process(_delta: float) -> void:
 	if _events.is_waiting_for_player():
 		lines.append("Next event waits until this is dealt with")
 	elif not lines.is_empty():
-		lines.append("Then %d s of calm before the next event" % int(EventManager.CALM_SECONDS))
+		lines.append("Then %d s of calm before the next event" % int(QuickGame.calm()))
 	elif _events.is_waiting_for_resources():
 		lines.append("Next event (%s) waits until %s, at most %d s" % [EventManager.NAMES[_events.get_next_type()], _events.get_wait_reason(), ceili(_events.get_extra_wait_left())])
 	else:

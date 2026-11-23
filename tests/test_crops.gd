@@ -19,6 +19,7 @@ func _initialize() -> void:
 func run() -> void:
 	DayNight.enabled = false   # Keep the midday light, so results do not depend on the time of day.
 	StoryBox.short = false     # Check the full story text; the game shows a shortened version.
+	StoryBox.enabled = false   # The accident tells a story; this test is about crops.
 	var main: Node = load("res://scenes/Main.tscn").instantiate()
 	root.add_child(main)
 	await process_frame

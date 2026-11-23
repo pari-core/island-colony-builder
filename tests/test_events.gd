@@ -39,6 +39,7 @@ func run() -> void:
 	# This test checks the rules of each event. The stories have their own tests
 	# (test_drought.gd, test_disease.gd and test_stories.gd).
 	StoryBox.enabled = false
+	EventPuzzles.enabled = false   # The schedule is tested without the puzzles (see test_event_puzzles.gd).
 	var main: Node = load("res://scenes/Main.tscn").instantiate()
 	root.add_child(main)
 	await process_frame
@@ -91,13 +92,13 @@ func run() -> void:
 	view(Vector3.ZERO, 200.0)
 	await shot("storm")
 	check("storm darkens the sky and adds fog", sun.light_energy < normal_energy * 0.4 and env.fog_enabled and env.fog_density > 0.001, "sun %.2f fog %.4f" % [sun.light_energy, env.fog_density])
-	ev._process(46.0)
+	ev._process(61.0)
 	await create_timer(2.3).timeout
 	check("storm ends, weather returns", not fx._rain.emitting and absf(sun.light_energy - normal_energy) < 0.01 and env.fog_density < 0.0001)
 	# Migration
 	ev.trigger(E.MIGRATION)
 	var gita: Worker = w.get_workers()[6]
-	check("migrants start on the ship, out at sea", w.get_workers().size() == 8 and gita.aboard and gita.model.position.x > 300.0 and gita.is_moving(), str(gita.model.position))
+	check("four migrants start on the ship, out at sea", w.get_workers().size() == 6 + EventManager.MIGRANTS and EventManager.MIGRANTS == 4 and gita.aboard and gita.model.position.x > 300.0 and gita.is_moving(), str(gita.model.position))
 	# Skip the sail in (test_migration_boat.gd checks it): put the ship at anchor.
 	var ship: MigrationBoat = main.get_node("MigrationBoat")
 	ship.position.x = ship.get_anchor().x
@@ -244,18 +245,19 @@ func run() -> void:
 	await process_frame
 	await process_frame
 	check("a full calm starts when the event ends", ev4.get_active().is_empty() and absf(t4.time_left - EventManager.CALM_SECONDS) < 1.0 and not t4.paused, "active %d left %.1f paused %s" % [ev4.get_active().size(), t4.time_left, t4.paused])
-	check("the schedule has five events, a mission after each easy one", str(EventManager.ORDER) == str([E.DISCOVERY, E.DROUGHT, E.TRADE, E.DISEASE, E.MIGRATION]) and ev4.get_next_type() == E.DROUGHT)
-	ev4._next_index = EventManager.ORDER.find(E.TRADE)
+	check("the schedule has six events", str(EventManager.ORDER) == str([E.DISCOVERY, E.DROUGHT, E.ACCIDENT, E.DISEASE, E.STORM, E.MIGRATION]) and ev4.get_next_type() == E.DROUGHT)
+	ev4._next_index = EventManager.ORDER.find(E.ACCIDENT)
 	r4.spend({R.WOOD: r4.get_amount(R.WOOD), R.STONE: r4.get_amount(R.STONE)})
 	t4.start(0.1)
 	await create_timer(0.3).timeout
-	check("Trade waits until there is wood or stone to trade", not ev4.is_active(E.TRADE) and ev4.is_waiting_for_resources())
-	check("panel says what the next event needs", label4.text.contains("Trade") and label4.text.contains("40 Wood"), label4.text)
-	r4.add(R.WOOD, 40)
+	check("the accident waits until the colony can pay for the repair", not ev4.is_active(E.ACCIDENT) and ev4.is_waiting_for_resources())
+	check("panel says what the next event needs", label4.text.contains("Building accident") and label4.text.contains("10 Wood"), label4.text)
+	r4.add(R.WOOD, 10)
+	r4.add(R.STONE, 5)
 	await process_frame
 	await process_frame
-	check("Trade starts once the wood is there", ev4.is_active(E.TRADE) and not ev4.is_waiting_for_resources())
-	ev4.decline()
+	check("the accident starts once the repair is affordable", ev4.is_active(E.ACCIDENT) and not ev4.is_waiting_for_resources())
+	ev4.end_event(E.ACCIDENT)
 	await process_frame
 	ev4._next_index = EventManager.ORDER.find(E.DROUGHT)   # Needs 10 wood and 5 stone for the Water Storage.
 	r4.spend({R.WOOD: r4.get_amount(R.WOOD)})
@@ -273,11 +275,11 @@ func run() -> void:
 		r4.add(type, 200)
 	builder4.choose_building(8)   # The Lighthouse: 5 days to build.
 	builder4._place_building(main4.get_node("MapManager").get_plot(2))
-	ev4._next_index = EventManager.ORDER.find(E.TRADE)
+	ev4._next_index = EventManager.ORDER.find(E.ACCIDENT)
 	t4.start(0.1)
 	await create_timer(0.3).timeout
-	check("with plenty of wood, Trade still waits for the building site", ev4.is_waiting_for_resources() and r4.get_amount(R.WOOD) >= 40 and not ev4.is_active(E.TRADE))
-	check("and the panel names the building, not resources", label4.text.contains("(Trade opportunity) waits until the Lighthouse is finished building") and not label4.text.contains("you have"), label4.text)
+	check("with plenty of wood, the accident still waits for the building site", ev4.is_waiting_for_resources() and r4.get_amount(R.WOOD) >= 40 and not ev4.is_active(E.ACCIDENT))
+	check("and the panel names the building, not resources", label4.text.contains("(Building accident) waits until the Lighthouse is finished building") and not label4.text.contains("you have"), label4.text)
 	main4.queue_free()
 	print("RESULT fails=%d" % fails)
 	quit(1 if fails > 0 else 0)

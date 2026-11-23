@@ -1,6 +1,6 @@
 # event_stories.gd
-# Stories for the three lighter events: Resource discovery, Trade opportunity
-# and Migration. The two missions have their own scripts (drought_mission.gd
+# Stories for the lighter events: Resource discovery, Building accident, Trade
+# opportunity and Migration. The two missions have their own scripts (drought_mission.gd
 # and disease_mission.gd).
 #
 # EventManager still decides when each event starts and what it does. This
@@ -42,6 +42,15 @@ const TRADE_STORY := [
 const TRADE_ACCEPTED := "The cargo of %s is rowed out to the ship, and a small chest of gold is carried up the beach. The captain tips his hat and promises to speak well of the colony in every port."
 const TRADE_DECLINED := "The captain shrugs, wishes the colony well and returns to his ship. By evening the sail is a speck on the horizon, and the wood is still in the stores."
 
+const ACCIDENT_TITLE := "A BUILDING COLLAPSES"
+const ACCIDENT_START := "BUILDING ACCIDENT!\nThe %s has collapsed and makes nothing until it is repaired.\nPress Action (Space) to send 2 idle workers to repair it for %s."
+const ACCIDENT_NOTHING := "A tremor shakes the island, but there is nothing built yet to damage."
+const ACCIDENT_END := "REPAIRED!\nThe %s is standing again and back at work."
+
+const STORM_TITLE := "THE GREAT STORM"
+const STORM_START := "STORM!\nWind and rain lash the island: all production slows to 75%% for %d seconds.\nKeep everyone working and wait it out."
+const STORM_END := "THE STORM HAS PASSED\nThe skies clear and production is back to normal."
+
 const ARRIVAL_TITLE := "NEW ARRIVALS"
 const ARRIVAL_STORY := [
 	"A sailing ship has been sighted, heading for the eastern beach. It sits low in the water, and the people on its deck are waving.",
@@ -59,6 +68,7 @@ var _trade_offer := 0            # Which of the captain's offers was accepted.
 var _trade_deal := {}            # That offer, kept for the closing story.
 var _gathered := { T.WOOD: 0, T.STONE: 0 }   # Made during the current discovery.
 var _joined := 0                 # Workers who arrived in the current migration.
+var _collapsed := ""             # The building the current accident damaged.
 
 @onready var _events: EventManager = get_node("../EventManager")
 @onready var _workers: WorkerManager = get_node("../WorkerManager")
@@ -112,7 +122,7 @@ func get_trade_items() -> Array[Dictionary]:
 
 # Compares what is active now with last time, to see what started and ended.
 func _on_events_changed() -> void:
-	for type: EventManager.Type in [E.DISCOVERY, E.TRADE, E.MIGRATION]:
+	for type: EventManager.Type in [E.DISCOVERY, E.TRADE, E.MIGRATION, E.ACCIDENT, E.STORM]:
 		var active := _events.is_active(type)
 		var was: bool = _running.get(type, false)
 		_running[type] = active
@@ -126,16 +136,26 @@ func _on_events_changed() -> void:
 
 func _started(type: EventManager.Type) -> void:
 	match type:
+		E.STORM:
+			_story.tell(STORM_TITLE, [STORM_START % int(QuickGame.duration(E.STORM))], "cloud")
 		E.DISCOVERY:
 			_gathered = { T.WOOD: 0, T.STONE: 0 }
 			var pages := FIND_STORY.duplicate()
-			var notice := "RESOURCE DISCOVERY!\nLumber Camps and Quarries make %d%% more for %d seconds." % [roundi((EventManager.DISCOVERY_BONUS - 1.0) * 100.0), int(EventManager.DURATIONS[E.DISCOVERY])]
+			var notice := "RESOURCE DISCOVERY!\nLumber Camps and Quarries make %d%% more for %d seconds." % [roundi((EventManager.DISCOVERY_BONUS - 1.0) * 100.0), int(QuickGame.duration(E.DISCOVERY))]
 			if _count_gatherers() == 0:
 				notice += "\nNobody is working at one yet: send workers there now to make the most of it."
 			else:
 				notice += "\n%d of your workers are there to make the most of it." % _count_gatherers()
 			pages.append(notice)
 			_story.tell(FIND_TITLE, pages, "star")
+		E.ACCIDENT:
+			var accident: Dictionary = _events.get_active().filter(func(e: Dictionary) -> bool: return e.type == E.ACCIDENT)[0]
+			if accident.plot == null:
+				_collapsed = ""
+				_story.tell(ACCIDENT_TITLE, [ACCIDENT_NOTHING], "hammer")
+				return
+			_collapsed = (accident.plot as BuildingPlot).building_info.name
+			_story.tell(ACCIDENT_TITLE, [ACCIDENT_START % [_collapsed, _resources.describe_cost(EventManager.REPAIR_COST)]], "hammer")
 		E.TRADE:
 			_trade_answer = ""
 			_awaiting_trade = true
@@ -150,9 +170,9 @@ func _started(type: EventManager.Type) -> void:
 			for worker in _workers.get_workers().slice(-_joined):
 				names.append(worker.worker_name)
 			var pages := ARRIVAL_STORY.duplicate()
-			pages.append("MIGRATION!\n%d new workers have joined the colony: %s.\nEach eats %d food at every meal." % [_joined, " and ".join(names), PopulationManager.FOOD_PER_WORKER])
+			pages.append("MIGRATION!\n%d new workers have joined the colony: %s.\nEach eats %d food at every meal." % [_joined, _list(names), PopulationManager.FOOD_PER_WORKER])
 			var homeless := _population.get_homeless()
-			var days := roundi(EventManager.DURATIONS[E.MIGRATION] / TimeManager.DAY_SECONDS)
+			var days := maxi(1, roundi(QuickGame.duration(E.MIGRATION) / TimeManager.DAY_SECONDS))
 			if homeless > 0:
 				pages.append("MISSION: MAKE THEM WELCOME\n%d people have no home. Build a House (it holds %d) within %d days, so that everyone has a bed." % [homeless, PopulationManager.PEOPLE_PER_HOUSE, days])
 			else:
@@ -162,6 +182,11 @@ func _started(type: EventManager.Type) -> void:
 
 func _ended(type: EventManager.Type) -> void:
 	match type:
+		E.STORM:
+			_story.tell(STORM_TITLE, [STORM_END], "cloud")
+		E.ACCIDENT:
+			if _collapsed != "":
+				_story.tell(ACCIDENT_TITLE, [ACCIDENT_END % _collapsed], "hammer")
 		E.DISCOVERY:
 			var wood: int = _gathered[T.WOOD]
 			var stone: int = _gathered[T.STONE]
@@ -195,6 +220,13 @@ func _on_story_finished() -> void:
 	if _awaiting_trade and _events.is_active(E.TRADE):
 		_awaiting_trade = false
 		_menu.open_choice("What will you tell the captain?", get_trade_items)
+
+
+# "Gita, Hari, Isla and Jai".
+static func _list(names: Array[String]) -> String:
+	if names.size() <= 1:
+		return "".join(names)
+	return ", ".join(names.slice(0, -1)) + " and " + names[-1]
 
 
 # Counts what the discovery brings in, for the closing story.

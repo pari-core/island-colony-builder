@@ -397,7 +397,7 @@ func _on_events_changed() -> void:
 	for event in _events.get_active():
 		var text := "%s has begun!" % EventManager.NAMES[event.type]
 		if _notes.is_empty() or _notes[0].text != text:
-			notify(text, "warning" if event.type in [EventManager.Type.DROUGHT, EventManager.Type.DISEASE, EventManager.Type.STORM] else "star")
+			notify(text, "warning" if event.type in [EventManager.Type.DROUGHT, EventManager.Type.DISEASE, EventManager.Type.ACCIDENT, EventManager.Type.STORM] else "star")
 
 
 func _process(delta: float) -> void:

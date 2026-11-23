@@ -183,7 +183,7 @@ func run() -> void:
 	menu.get_node("../SaveManager").save_path = "user://no_such_save.json"
 	menu.open_start_menu()
 	await process_frame
-	check("the main menu pauses the game", paused and str(menu.get_item_texts()) == str(["New Game", "How to Play", "Settings", "Credits", "Quit"]), str(menu.get_item_texts()))
+	check("the main menu pauses the game", paused and str(menu.get_item_texts()) == str(["Quick Game (8 min)", "Full Game", "How to Play", "Settings", "Credits", "Quit"]), str(menu.get_item_texts()))
 	await key(KEY_BACKSPACE)
 	check("Back does not skip the start board", menu.get_mode() == ControllerMenu.Mode.START)
 	await key(KEY_SPACE)

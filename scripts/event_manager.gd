@@ -24,24 +24,25 @@ signal building_repaired(plot: BuildingPlot)
 # with the vaccine, and false if the illness passed by itself.
 signal disease_ended(cured: bool)
 
-enum Type { DROUGHT, STORM, DISCOVERY, DISEASE, TRADE, MIGRATION, ACCIDENT }
+# STORM is last so saved games keep their numbers (it was removed and brought back).
+enum Type { DROUGHT, DISCOVERY, DISEASE, TRADE, MIGRATION, ACCIDENT, STORM }
 
 const NAMES := {
 	Type.DROUGHT: "Drought",
-	Type.STORM: "Storm",
 	Type.DISCOVERY: "Resource discovery",
 	Type.DISEASE: "Disease outbreak",
 	Type.TRADE: "Trade opportunity",
 	Type.MIGRATION: "Migration",
 	Type.ACCIDENT: "Building accident",
+	Type.STORM: "Storm",
 }
 
 # The order events happen in. After the last one, the list starts again.
 # An easy event comes between the two missions, so the player gets a breather.
-# Storm and Building accident still work (the tests and the debug tools can
-# start them) but are left out of the schedule, to keep the game from crowding
-# the player. To bring one back, add it to this list.
-const ORDER := [Type.DISCOVERY, Type.DROUGHT, Type.TRADE, Type.DISEASE, Type.MIGRATION]
+# Team decisions, 2026-11-23: the Building accident replaces the Trade
+# opportunity, and the Storm is a sixth event. Trade still works (the tests and
+# the debug tools can start it) but is left out of the schedule.
+const ORDER := [Type.DISCOVERY, Type.DROUGHT, Type.ACCIDENT, Type.DISEASE, Type.STORM, Type.MIGRATION]
 
 # First guesses, to be balanced once the game is playable.
 const FIRST_EVENT_SECONDS := 60.0
@@ -49,11 +50,11 @@ const CALM_SECONDS := 90.0       # Quiet time after an event ends before the nex
 const MAX_EXTRA_WAIT := 90.0     # Longest the next event waits for resources after the calm.
 const DURATIONS := {             # Seconds each event lasts, or waits for a response.
 	Type.DROUGHT: -1.0,          # Lasts until the drought mission ends it (see drought_mission.gd).
-	Type.STORM: 45.0,
 	Type.DISCOVERY: 60.0,
 	Type.DISEASE: 120.0,         # Without treatment, the sick recover by themselves after this.
 	Type.TRADE: 30.0,
 	Type.MIGRATION: 40.0,        # Two in-game days to find the newcomers a home.
+	Type.STORM: 60.0,
 	Type.ACCIDENT: -1.0,         # -1 means it has no countdown: it lasts until the building is repaired.
 }
 const DROUGHT_FOOD := 0.5        # Food output multiplier during a drought.
@@ -84,7 +85,9 @@ const TRADE_BOTH_SHARE := 0.25
 const TRADE_MAX := 100
 const TRADE_MIN := 20
 const TRADE_GOODS_PER_GOLD := 2  # Wood or stone for each gold (team decision, 2026-11-20).
-const MIGRANTS := 2
+# Four newcomers: one House's worth (PEOPLE_PER_HOUSE), so the migration asks
+# the player for exactly one new House. Team request, 2026-11-23: "more than 2".
+const MIGRANTS := 4
 const REPAIR_COST := { ResourceManager.Type.WOOD: 10, ResourceManager.Type.STONE: 5 }
 const REPAIR_CREW := 2           # The most workers sent to repair.
 const REPAIR_SECONDS := 20.0     # Work needed once the crew arrives (twice as long with one worker).
@@ -113,7 +116,7 @@ var _extra_wait := 0.0
 
 func _ready() -> void:
 	_timer.name = "EventTimer"
-	_timer.wait_time = FIRST_EVENT_SECONDS
+	_timer.wait_time = QuickGame.first_event()
 	_timer.one_shot = true
 	_timer.timeout.connect(_on_timer)
 	add_child(_timer)
@@ -140,7 +143,7 @@ func _process(delta: float) -> void:
 	# Checked after the events above, so a new event does not lose this frame's time.
 	if _waiting_for_resources and _active.is_empty():
 		_extra_wait += delta
-		if is_ready_for_next() or _extra_wait >= MAX_EXTRA_WAIT:
+		if is_ready_for_next() or _extra_wait >= QuickGame.max_extra_wait():
 			_start_scheduled_event()
 
 
@@ -175,7 +178,7 @@ func is_waiting_for_resources() -> bool:
 
 # Seconds left before the next event comes anyway, even without the resources.
 func get_extra_wait_left() -> float:
-	return maxf(MAX_EXTRA_WAIT - _extra_wait, 0.0)
+	return maxf(QuickGame.max_extra_wait() - _extra_wait, 0.0)
 
 
 func get_next_type() -> Type:
@@ -262,6 +265,13 @@ func get_output_multiplier(resource: ResourceManager.Type) -> float:
 
 # Starts the next event in ORDER. The schedule timer calls this, and the debug key
 # (F9) can call it to show events during testing and the demo.
+# Starts the schedule again from the beginning: the first event comes after
+# QuickGame.first_event() seconds. Called when a game is chosen on the main menu.
+func restart_schedule() -> void:
+	if not _timer.is_stopped():
+		_timer.start(QuickGame.first_event())
+
+
 func trigger_next() -> void:
 	var type: Type = ORDER[_next_index]
 	_next_index = (_next_index + 1) % ORDER.size()
@@ -271,7 +281,7 @@ func trigger_next() -> void:
 func trigger(type: Type) -> void:
 	if is_active(type):
 		return
-	var event := { "type": type, "time_left": DURATIONS[type], "plot": null, "crew": [], "progress": 0.0, "treating": false, "cured": false, "joined": 0, "offer": -1 }
+	var event := { "type": type, "time_left": QuickGame.duration(type), "plot": null, "crew": [], "progress": 0.0, "treating": false, "cured": false, "joined": 0, "offer": -1 }
 	match type:
 		Type.DISEASE:
 			var workers := _workers.get_workers()
@@ -469,7 +479,7 @@ func describe(event: Dictionary) -> String:
 	var text := ""
 	match event.type:
 		Type.DROUGHT: text = _drought.describe()
-		Type.STORM: text = "All production slowed to 75%"
+		Type.STORM: text = "Storm: all production slowed to 75%"
 		Type.DISCOVERY: text = "Wood and stone production +50%"
 		Type.DISEASE:
 			var sick := "%d of %d workers sick and not working" % [get_patients().size(), _workers.get_workers().size()]
@@ -514,7 +524,7 @@ func _start_scheduled_event() -> void:
 	trigger_next()
 	# The timer is paused while the event runs, and starts again from the full calm
 	# period when the event ends (see _end).
-	_timer.start(CALM_SECONDS)
+	_timer.start(QuickGame.calm())
 
 
 # Each sick worker recovers on reaching the Research Lab. When the last one is
@@ -572,7 +582,7 @@ func _end(event: Dictionary) -> void:
 	# The calm begins once nothing is happening. A stopped timer means the schedule
 	# was switched off (the tests do this), so it stays off.
 	if _active.is_empty() and not _timer.is_stopped():
-		_timer.start(CALM_SECONDS)
+		_timer.start(QuickGame.calm())
 	_resources.refresh_storage()
 	_population.notify_housing_changed()
 	_workers.workers_changed.emit()
@@ -629,5 +639,5 @@ func load_save_data(data: Dictionary) -> void:
 		_timer.stop()
 	else:
 		var left := float(data.get("calm_left", 0.0))
-		_timer.start(left if left > 0.0 and left < CALM_SECONDS else CALM_SECONDS)
+		_timer.start(left if left > 0.0 and left < QuickGame.calm() else QuickGame.calm())
 	events_changed.emit()

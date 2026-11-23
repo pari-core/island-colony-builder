@@ -147,7 +147,7 @@ func run() -> void:
 	await create_timer(0.8).timeout   # Lets the upgrade animation finish.
 
 	# ------------------------------------------------------------ Saving
-	events.trigger(EventManager.Type.STORM)
+	events.trigger(EventManager.Type.DISCOVERY)
 	check("cannot save during an event", not saver.save_game() and saver.get_save_problem().contains("event") and not saver.has_save(), saver.get_save_problem())
 	events._end(events.get_active()[0])
 	events.get_node("EventTimer").stop()
@@ -201,7 +201,7 @@ func run() -> void:
 	file.close()
 	check("a damaged file is refused", not saver.has_save() and saver.read_save().is_empty())
 	file = FileAccess.open(PATH, FileAccess.WRITE)
-	file.store_string(good.replace("\"version\": 1", "\"version\": 99"))
+	file.store_string(good.replace("\"version\": %d" % SaveManager.VERSION, "\"version\": 99"))
 	file.close()
 	check("a file from another version is refused", not saver.has_save())
 	saver.apply({ "population": { "happiness": 50, "upkeep_left": 4.0 }, "workers": { "jobs": [99, 2, -1] }, "buildings": { "buildings": [{ "plot": 9999, "name": "House", "level": 1 }, { "plot": 4, "name": "Castle", "level": 1 }] } })
@@ -225,7 +225,7 @@ func run() -> void:
 	var first := current_scene
 	first.get_node("SaveManager").save_path = PATH
 	menu = first.get_node("ControllerMenu")
-	check("the main menu offers to continue the saved game, first", menu.get_mode() == ControllerMenu.Mode.START and menu.get_item_texts().size() == 6 and menu.get_item_texts()[0].begins_with("Continue (20"), str(menu.get_item_texts()))
+	check("the main menu offers to continue the saved game, first", menu.get_mode() == ControllerMenu.Mode.START and menu.get_item_texts().size() == 7 and menu.get_item_texts()[0].begins_with("Continue (20"), str(menu.get_item_texts()))
 	menu.confirm()   # Continue is the first item, already highlighted.
 	for i in 10:
 		await process_frame

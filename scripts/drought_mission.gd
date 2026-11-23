@@ -58,7 +58,7 @@ const STORY_SUCCESS := [
 	"The farms begin receiving water again, and the villagers return to their work. Your decision has saved the colony. But remember, the next drought may be even more challenging.",
 ]
 const STORY_FAILURE := "At last, dark clouds gather and the rain returns. But it came too late for many of the crops, and the villagers are worn out and worried. Without a water storage facility, the next drought will hit just as hard."
-const STORY_PROTECTED := "The sun burns down again and the river is falling. This time the colony is ready: the Water Storage is full, and the farms can keep going on what it holds."
+const STORY_PROTECTED := "Another drought, but the Water Storage is full: the farms keep going on what it holds."
 const STORY_PROTECTED_END := "Rain at last. The Water Storage carried the colony through the dry days, and it is filling up again."
 const CHATTER_WAITING := ["So thirsty...", "When will it rain?", "The river is so low", "The crops are dying", "We need water"]
 const CHATTER_BUILDING := ["The tank is rising!", "Keep building!", "Water, soon", "Not long now"]
@@ -107,8 +107,8 @@ func get_recovery_days_left() -> float:
 # Days until the rain comes back by itself.
 func get_days_until_rain() -> float:
 	match _stage:
-		Stage.MISSION: return maxf(MAX_DAYS - _days_in, 0.0)
-		Stage.PROTECTED: return maxf(PROTECTED_DAYS - _days_in, 0.0)
+		Stage.MISSION: return maxf(QuickGame.days(MAX_DAYS) - _days_in, 0.0)
+		Stage.PROTECTED: return maxf(QuickGame.days(PROTECTED_DAYS) - _days_in, 0.0)
 	return 0.0
 
 
@@ -194,7 +194,7 @@ func _begin() -> void:
 # The last page of the opening story: what to do, and what it takes.
 func _mission_text() -> String:
 	var info := get_building_info()
-	var text := "MISSION: SAVE THE COLONY\nObjective: construct a Water Storage.\nIt needs %s, %d idle workers and %d days." % [_resources.describe_cost(info.cost), info.builders, int(info.build_days)]
+	var text := "MISSION: SAVE THE COLONY\nObjective: construct a Water Storage.\nIt needs %s, %d idle workers and %d days." % [_resources.describe_cost(info.cost), info.builders, ceili(QuickGame.days(info.build_days))]
 	if get_storage_plot() != null:
 		return text + " Yours is already being built: keep its builders free to finish it."
 	return text + " Press B (Build) and click a square: the Water Storage is already chosen (key 8)."
@@ -207,7 +207,7 @@ func _on_time_passed(days: float) -> void:
 	_days_in += days
 	_chatter(days)
 	if _stage == Stage.PROTECTED:
-		if _days_in >= PROTECTED_DAYS:
+		if _days_in >= QuickGame.days(PROTECTED_DAYS):
 			_stage = Stage.NONE
 			_events.end_event(EventManager.Type.DROUGHT)
 			_story.tell(TITLE, [STORY_PROTECTED_END])
@@ -217,10 +217,10 @@ func _on_time_passed(days: float) -> void:
 	if plot != null and not _twist_done and _construction.is_site(plot) and _construction.get_progress(plot) >= TWIST_AT:
 		_twist_done = true
 		if is_on_riverbank(plot):
-			_construction.shorten(plot, TWIST_DAYS)
+			_construction.shorten(plot, QuickGame.days(TWIST_DAYS))
 			_popups.show_on(plot, "Old foundation found!", CHATTER_COLOUR)
 			_story.tell(TITLE, [STORY_TWIST])
-	if _days_in >= MAX_DAYS:
+	if _days_in >= QuickGame.days(MAX_DAYS):
 		_fail()
 
 

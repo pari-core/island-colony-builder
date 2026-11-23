@@ -74,7 +74,9 @@ func run() -> void:
 	check("another puzzle is refused until then", not puzzle.open())
 	await process_frame
 	await process_frame
-	check("the button shows the wait", button.disabled and button.text.ends_with(" s") and button.tooltip_text.begins_with("Next puzzle in"), button.text)
+	# Since 2026-11-23 the toolbar button opens the next event's puzzle
+	# (event_puzzles.gd), so the memory game's own wait does not grey it out.
+	check("the toolbar button follows the next event's puzzle, not this wait", not button.disabled and button.tooltip_text.begins_with("Memory Match"), button.tooltip_text)
 	puzzle._cooldown = 0.0
 	check("after the wait it can be played again, with a new shuffle", puzzle.open() and puzzle.get_cards() != cards)
 	puzzle.close()
@@ -84,7 +86,7 @@ func run() -> void:
 	var menu: ControllerMenu = main.get_node("ControllerMenu")
 	menu.open_pause_menu()
 	var texts := menu.get_item_texts()
-	check("the pause menu offers the puzzle for the controller", texts.has("Play the gold puzzle"), str(texts))
+	check("the pause menu offers the puzzle for the controller", texts.has("Play the puzzle: Memory Match"), str(texts))
 	menu.close_menu()
 	print("RESULT fails=%d" % fails)
 	quit(1 if fails > 0 else 0)

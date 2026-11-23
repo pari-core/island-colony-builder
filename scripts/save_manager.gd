@@ -24,7 +24,7 @@ extends Node
 signal game_saved
 signal game_loaded
 
-const VERSION := 1               # Raised when the file's layout changes. Older files are refused.
+const VERSION := 2               # Raised when the file's layout changes. Older files are refused.
 const DEFAULT_PATH := "user://island_colony_save.json"
 
 # The parts of a save: the name used in the file, and the node that owns it.

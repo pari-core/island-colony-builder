@@ -227,7 +227,7 @@ func run() -> void:
 
 	# ------------------------------------------------------------ The next drought
 	events.trigger(E.DROUGHT)
-	check("the next drought has a one-page story", story.is_open() and story.get_page_count() == 1 and story.get_page_text().contains("This time the colony is ready"))
+	check("the next drought has a one-page story", story.is_open() and story.get_page_count() == 1 and story.get_page_text().contains("the Water Storage is full"))
 	story.skip()
 	check("with the Water Storage, farms make 80%", mission.get_stage() == DroughtMission.Stage.PROTECTED and workers.get_output(farm) == 10, str(workers.get_output(farm)))
 	time.advance(2.9)

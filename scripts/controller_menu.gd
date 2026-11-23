@@ -424,14 +424,14 @@ func _pause_items() -> Array[Dictionary]:
 		"problem": "Another event is still happening",
 		"closes": true,
 	})
-	var puzzle := get_node_or_null("../UI/GoldPuzzle") as GoldPuzzle
-	if puzzle != null:
+	var puzzles := get_node_or_null("../UI/EventPuzzles") as EventPuzzles
+	if puzzles != null:
 		items.append({
-			"text": "Play the gold puzzle" if puzzle.is_ready() else "Gold puzzle (ready in %d s)" % ceili(puzzle.get_cooldown()),
+			"text": "Play the puzzle: %s" % puzzles.get_next_title() if puzzles.can_play() else "Puzzle played (the next unlocks with the next event)",
 			"action": func() -> bool:
 				close_menu()
-				return puzzle.open(),
-			"problem": "The next puzzle is not ready yet",
+				return puzzles.play_next(),
+			"problem": "Already played before this event",
 			"closes": true,
 		})
 	items.append({ "text": "Rotate view left", "action": func() -> bool: _camera.rotate_view(-ROTATE_STEP); return true })
@@ -475,6 +475,14 @@ func _build_items() -> Array[Dictionary]:
 	return items
 
 
+func _new_game(quick: bool) -> bool:
+	QuickGame.on = quick
+	var events := get_node_or_null("../EventManager") as EventManager
+	if events != null:
+		events.restart_schedule()
+	return true
+
+
 func _start_items() -> Array[Dictionary]:
 	# The main menu (v2 storybook design): Continue, New Game, How to Play,
 	# Settings, Credits and Quit. The windows open over the menu.
@@ -487,7 +495,9 @@ func _start_items() -> Array[Dictionary]:
 			"problem": "The saved game could not be loaded",
 			"closes": true,
 		})
-	items.append({ "text": "New Game", "action": func() -> bool: return true, "closes": true })
+	# Quick Game: the short demo game (see quick_game.gd). Full Game: the whole game.
+	items.append({ "text": "Quick Game (8 min)", "action": func() -> bool: return _new_game(true), "closes": true })
+	items.append({ "text": "Full Game", "action": func() -> bool: return _new_game(false), "closes": true })
 	if screens != null:
 		for entry in [["How to Play", "help"], ["Settings", "settings"], ["Credits", "credits"]]:
 			var which: String = entry[1]

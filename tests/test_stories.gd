@@ -194,9 +194,9 @@ func run() -> void:
 
 	# ------------------------------------------------------------ New Arrivals
 	events.trigger(E.MIGRATION)
-	check("the migration opens its story: 2 workers arrive", workers.get_workers().size() == 8 and story.get_title() == "NEW ARRIVALS" and story.get_page_count() == 5 and story.get_icon() == "boat" and page(1).begins_with("A sailing ship has been sighted"))
-	check("the notice names the newcomers", page(4) == "MIGRATION!\n2 new workers have joined the colony: Gita and Hari.\nEach eats 2 food at every meal.", page(4))
-	check("the mission says how many need a home, and how long there is", page(5) == "MISSION: MAKE THEM WELCOME\n2 people have no home. Build a House (it holds 4) within 2 days, so that everyone has a bed.", page(5))
+	check("the migration opens its story: 4 workers arrive", workers.get_workers().size() == 10 and story.get_title() == "NEW ARRIVALS" and story.get_page_count() == 5 and story.get_icon() == "boat" and page(1).begins_with("A sailing ship has been sighted"))
+	check("the notice names the newcomers", page(4) == "MIGRATION!\n4 new workers have joined the colony: Gita, Hari, Isla and Jai.\nEach eats 2 food at every meal.", page(4))
+	check("the mission says how many need a home, and how long there is", page(5) == "MISSION: MAKE THEM WELCOME\n4 people have no home. Build a House (it holds 4) within 2 days, so that everyone has a bed.", page(5))
 	story.advance(); story.advance(); story.advance(); story.advance(); story.advance(); story.advance(); story.advance(); story.advance()
 	await shot("story_migration.png")
 	story.skip()
@@ -214,7 +214,7 @@ func run() -> void:
 	story.skip()
 	happy = pop.get_happiness()
 	events._process(41.0)
-	check("with no House built, the other ending is told and nothing is given", story.get_page_text().begins_with("The newcomers are working hard, but there are not enough beds") and page(2).begins_with("NO ROOM FOR EVERYONE\n2 people have no home") and pop.get_happiness() == happy, page(2))
+	check("with no House built, the other ending is told and nothing is given", story.get_page_text().begins_with("The newcomers are working hard, but there are not enough beds") and page(2).begins_with("NO ROOM FOR EVERYONE\n4 people have no home") and pop.get_happiness() == happy, page(2))
 	story.skip()
 
 	while workers.add_worker():

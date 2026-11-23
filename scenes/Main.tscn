@@ -18,6 +18,7 @@
 [ext_resource type="Script" path="res://scripts/game_state_manager.gd" id="16_game"]
 [ext_resource type="Script" path="res://scripts/goal_panel.gd" id="17_goal"]
 [ext_resource type="Script" path="res://scripts/controller_menu.gd" id="20_controller"]
+[ext_resource type="Script" path="res://scripts/controller_link.gd" id="20_link"]
 [ext_resource type="Script" path="res://scripts/crop_manager.gd" id="21_crops"]
 [ext_resource type="Script" path="res://scripts/popup_manager.gd" id="22_popups"]
 [ext_resource type="Script" path="res://scripts/save_manager.gd" id="23_saves"]
@@ -36,6 +37,7 @@
 [ext_resource type="Script" path="res://scripts/far_islands.gd" id="36_far"]
 [ext_resource type="Script" path="res://scripts/ground_cover.gd" id="37_cover"]
 [ext_resource type="Script" path="res://scripts/gold_puzzle.gd" id="38_puzzle"]
+[ext_resource type="Script" path="res://scripts/event_puzzles.gd" id="38_eventpuzzles"]
 [ext_resource type="Script" path="res://scripts/screens.gd" id="39_screens"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_main"]
@@ -156,6 +158,9 @@ script = ExtResource("23_saves")
 [node name="ControllerMenu" type="Node" parent="."]
 script = ExtResource("20_controller")
 
+[node name="ControllerLink" type="Node" parent="."]
+script = ExtResource("20_link")
+
 [node name="UI" type="CanvasLayer" parent="."]
 
 [node name="ResourcePanel" type="PanelContainer" parent="UI"]
@@ -236,6 +241,14 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 script = ExtResource("38_puzzle")
+
+[node name="EventPuzzles" type="Control" parent="UI"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("38_eventpuzzles")
 
 [node name="Screens" type="Control" parent="UI"]
 layout_mode = 3

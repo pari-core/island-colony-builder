@@ -111,7 +111,7 @@ func get_healthy_count() -> int:
 
 # The answers on the decision board. ControllerMenu shows them.
 func get_choice_items() -> Array[Dictionary]:
-	var wait_seconds := int(EventManager.DURATIONS[EventManager.Type.DISEASE])
+	var wait_seconds := int(QuickGame.duration(EventManager.Type.DISEASE))
 	var wait := {
 		"text": "Wait for natural recovery\n     Free. The sick rest and recover in about %d seconds." % wait_seconds,
 		"action": func() -> bool:

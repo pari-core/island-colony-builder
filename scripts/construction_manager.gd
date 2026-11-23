@@ -111,7 +111,7 @@ func _on_building_placed(plot: BuildingPlot) -> void:
 	sign.position = Vector3(plot.position.x, _terrain.LAND_HEIGHT + SIGN_HEIGHT, plot.position.z)
 	_sites[plot] = {
 		"done": 0.0,
-		"total": float(plot.building_info.build_days),
+		"total": QuickGame.days(float(plot.building_info.build_days)),
 		"builders": int(plot.building_info.get("builders", 1)),
 		"crew": [],
 		"sign": sign,

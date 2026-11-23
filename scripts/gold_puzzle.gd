@@ -16,6 +16,7 @@ class_name GoldPuzzle
 extends Control
 
 signal solved(gold: int)
+signal closed
 
 const PICTURES := ["food", "wood", "stone", "gold", "people", "home"]
 const COLUMNS := 4
@@ -81,9 +82,10 @@ static func reward_for(moves: int) -> int:
 	return clampi(MAX_REWARD - (moves - PICTURES.size()), MIN_REWARD, MAX_REWARD)
 
 
-# Deals a new puzzle and shows it. Returns false while the cooldown runs.
-func open() -> bool:
-	if not is_ready() or is_open():
+# Deals a new puzzle and shows it. Returns false while the cooldown runs, unless
+# forced (before a Discovery event, see event_puzzles.gd).
+func open(forced := false) -> bool:
+	if (not is_ready() and not forced) or is_open():
 		return false
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 1000 + _played
@@ -117,6 +119,7 @@ func close() -> void:
 	_board.visible = false
 	get_tree().paused = false
 	_cooldown = COOLDOWN
+	closed.emit()
 
 
 # Turns a card face up. The second card of a move is compared with the first.
