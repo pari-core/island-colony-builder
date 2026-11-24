@@ -273,11 +273,11 @@ func _placing_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("pad_right", true):
 		move_build_cursor(Vector2.RIGHT)
 	elif event.is_action_pressed("pad_action"):
-		# With a square chosen, Action opens the list of buildings for it.
+		# With a square chosen, Action builds the chosen building there.
 		if _builder.get_cursor_plot() == null or _builder.is_following_mouse():
 			move_build_cursor(Vector2.ZERO)
 		else:
-			open_build_menu()
+			_builder.confirm_placement()
 	elif event.is_action_pressed("pad_back"):
 		_builder.cancel_placement()
 	elif event.is_action_pressed("pad_turn_left"):
@@ -297,8 +297,8 @@ func _menu_input(event: InputEvent) -> void:
 		move_highlight(-1)
 	elif event.is_action_pressed("pad_down", true) or event.is_action_pressed("pad_turn_right"):
 		move_highlight(1)
-	elif event.is_action_pressed("pad_action"):
-		confirm()
+	elif event.is_action_pressed("pad_action") or event.is_action_pressed("pad_select"):
+		confirm()   # Action or the joystick click chooses the highlighted option.
 	elif event.is_action_pressed("pad_back") or event.is_action_pressed("pad_menu") or event.is_action_pressed("ui_cancel"):
 		# The start board and a story choice only close when an item is chosen.
 		if _mode != Mode.START and _mode != Mode.CHOICE:

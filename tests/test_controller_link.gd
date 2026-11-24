@@ -56,7 +56,11 @@ func run() -> void:
 	link.handle_line("BTN BUILD 0")
 	await process_frame
 	await process_frame
-	check("BTN BUILD starts placing a building, like the B key", buildings.is_placing())
+	var screens: Screens = main.get_node("UI/Screens")
+	check("BTN BUILD opens the Build Menu", screens.get_open_name() == "build", screens.get_open_name())
+	screens._place_chosen(0)   # Action on the first building (House) closes it and starts placing.
+	await process_frame
+	check("choosing a building in the Build Menu starts placing it", buildings.is_placing() and screens.get_open_name() == "")
 	check("the blue LED shows placing", link.get_led_line() == "LEDS 1001", link.get_led_line())
 	link.handle_line("BTN BACK 1")
 	link.handle_line("BTN BACK 0")
@@ -85,6 +89,11 @@ func run() -> void:
 	link.handle_line("nonsense")
 	link.handle_line("BTN NOTHING 1")
 	check("unknown lines are ignored", true)
+
+	var population: PopulationManager = main.get_node("PopulationManager")
+	check("the TFT line carries the happiness", link.get_happiness_line() == "HAPPY %d" % population.get_happiness(), link.get_happiness_line())
+	population.change_happiness(-5)
+	check("and follows it when it changes", link.get_happiness_line() == "HAPPY %d" % population.get_happiness(), link.get_happiness_line())
 
 	print("RESULT fails=%d" % fails)
 	quit(1 if fails > 0 else 0)

@@ -439,9 +439,9 @@ func _refresh_preview() -> void:
 		if not _hovered_plot.is_buildable():
 			status = "Cannot build here: this plot is not empty"
 		elif can_pay:
-			status = "Click to build here, or press Space to choose a building"
+			status = "Click to build here, or press Action"
 	_preview.visible = _hovered_plot != null
-	_label.text = "%s\n%s. Cost: %s\n%s. Esc to cancel." % [_building_menu_text(), chosen.name, _resources.describe_cost(chosen.cost), status]
+	_label.text = "%s. Cost: %s\n%s. Back or Esc to cancel." % [chosen.name, _resources.describe_cost(chosen.cost), status]
 
 
 # Lists the choices, with the current one in brackets.

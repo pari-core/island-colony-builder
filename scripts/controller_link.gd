@@ -17,6 +17,7 @@
 #                red    = danger: starving or storage full (blinks when lost)
 #                blue   = placing a building
 #   "BEEP n"     1 a building was placed, 2 a new event, 3 the game ended
+#   "HAPPY n"    happiness 0-100, shown on the controller's TFT as a bar
 #
 # Finding the board: every few seconds, while not connected, the link opens the
 # next USB serial port and waits for "HELLO ISLAND". Bluetooth and debug ports
@@ -49,11 +50,13 @@ var _tried: Array[String] = []   # Ports already tried in this round.
 var _buffer := ""
 var _led_timer := 0.0
 var _last_leds := ""
+var _last_happy := ""
 var _sent: Array[String] = []    # Every line sent, newest last (for tests).
 
 @onready var _state: GameStateManager = get_node("../GameStateManager")
 @onready var _events: EventManager = get_node("../EventManager")
 @onready var _buildings: BuildingManager = get_node("../BuildingManager")
+@onready var _population: PopulationManager = get_node("../PopulationManager")
 
 
 func _ready() -> void:
@@ -102,6 +105,7 @@ func _process(delta: float) -> void:
 	if _led_timer <= 0.0:
 		_led_timer = LED_EVERY
 		_send_leds()
+		_send_happiness()
 
 
 func _try_next_port() -> void:
@@ -166,13 +170,25 @@ func handle_line(line: String) -> void:
 				var was_connected := _is_connected
 				_is_connected = true
 				_last_leds = ""
+				_last_happy = ""
 				send("HI")
 				if not was_connected:
 					connected.emit(_port)
 					_notify("Controller connected")
 					beep(1)
 		"BTN":
-			if parts.size() >= 3 and BUTTON_ACTIONS.has(parts[1]):
+			if parts.size() >= 3 and parts[1] == "BUILD" and not _buildings.is_placing() \
+					and get_node_or_null("../UI/Screens") != null and not _game_over():
+				# The Build button opens the Build Menu (like the bottom-left Build
+				# button); the building chosen there is placed with the joystick.
+				# While placing, it cancels like the B key (below).
+				if parts[2] == "1":
+					var screens: Screens = get_node("../UI/Screens")
+					if screens.get_open_name() == "build":
+						screens.close()
+					else:
+						screens.open("build")
+			elif parts.size() >= 3 and BUTTON_ACTIONS.has(parts[1]):
 				_fire(BUTTON_ACTIONS[parts[1]], parts[2] == "1")
 				# The win and lose screens answer Enter and Backspace keys.
 				if parts[2] == "1" and _game_over():
@@ -227,7 +243,21 @@ func get_led_line() -> String:
 func _send_leds() -> void:
 	var line := get_led_line()
 	if line != _last_leds:
+		# The colony has just come into danger (red turns on): sound a warning.
+		if _last_leds.length() == 9 and _last_leds[7] == "0" and line[7] == "1":
+			beep(2)
 		_last_leds = line
+		send(line)
+
+
+func get_happiness_line() -> String:
+	return "HAPPY %d" % _population.get_happiness()
+
+
+func _send_happiness() -> void:
+	var line := get_happiness_line()
+	if line != _last_happy:
+		_last_happy = line
 		send(line)
 
 

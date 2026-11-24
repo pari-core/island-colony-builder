@@ -158,6 +158,58 @@ func _input(event: InputEvent) -> void:
 	if _window != null and (event.is_action_pressed("ui_cancel") or event.is_action_pressed("pad_back") or event.is_action_pressed("pad_menu")):
 		close()
 		get_viewport().set_input_as_handled()
+	elif _window_name == "build" and _build_menu_input(event):
+		get_viewport().set_input_as_handled()
+
+
+# The controller in the Build Menu: joystick left/right picks a building,
+# up/down changes the tab, Action or the joystick click places it.
+func _build_menu_input(event: InputEvent) -> bool:
+	var shown := _shown_buildings()
+	if event.is_action_pressed("pad_left", true) or event.is_action_pressed("pad_turn_left"):
+		_build_choice = maxi(_build_choice - 1, 0)
+	elif event.is_action_pressed("pad_right", true) or event.is_action_pressed("pad_turn_right"):
+		_build_choice = mini(_build_choice + 1, maxi(shown.size() - 1, 0))
+	elif event.is_action_pressed("pad_up", true):
+		_build_tab = posmod(_build_tab - 1, BUILD_TABS.size())
+		_build_choice = 0
+	elif event.is_action_pressed("pad_down", true):
+		_build_tab = posmod(_build_tab + 1, BUILD_TABS.size())
+		_build_choice = 0
+	elif event.is_action_pressed("pad_action") or event.is_action_pressed("pad_select"):
+		if not shown.is_empty() and _build_choice < shown.size():
+			var index: int = shown[_build_choice]
+			if _resources.can_afford(BuildingManager.BUILDINGS[index].cost):
+				_place_chosen(index)
+			else:
+				notify("Not enough resources for a %s yet" % BuildingManager.BUILDINGS[index].name, "gear")
+		return true
+	else:
+		return false
+	open("build")   # Redraw with the new choice.
+	return true
+
+
+# The buildings on the current Build Menu tab that can be built now.
+func _shown_buildings() -> Array[int]:
+	var shown: Array[int] = []
+	for building_name: String in BUILD_TABS[_build_tab][2]:
+		var index := _index_of(building_name)
+		if index >= 0 and _builder.is_available(index):
+			shown.append(index)
+	return shown
+
+
+# Closes the Build Menu and starts placing this building.
+func _place_chosen(index: int) -> void:
+	close()
+	if not _builder.is_placing():
+		_builder.start_placement()
+	_builder.choose_building(index)
+	# Put the cursor on an empty square straight away, so the joystick can move it.
+	var menu := get_node_or_null("../../ControllerMenu")
+	if menu != null:
+		menu.move_build_cursor(Vector2.ZERO)
 
 
 # A parchment window with a title on its ribbon and a round close button.
@@ -251,12 +303,7 @@ func _open_build() -> void:
 	cost.add_child(_text("Cost:", 16, WoodenBoard.INK))
 	cost.add_child(_cost_row(chosen.cost, 16))
 	info_column.add_child(cost)
-	var place := _sage_button("Place", func() -> void:
-		var index := shown[_build_choice]
-		close()
-		if not _builder.is_placing():
-			_builder.start_placement()
-		_builder.choose_building(index))
+	var place := _sage_button("Place", func() -> void: _place_chosen(shown[_build_choice]))
 	place.disabled = not _resources.can_afford(chosen.cost)
 	info_column.add_child(place)
 	if place.disabled:

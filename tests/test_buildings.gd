@@ -83,7 +83,7 @@ func run() -> void:
 		var before := [r.get_amount(ResourceManager.Type.WOOD), r.get_amount(ResourceManager.Type.STONE), r.get_amount(ResourceManager.Type.GOLD)]
 		await key(KEY_B)
 		await key(keys[i])
-		check("key %d chooses %s" % [i + 1, names[i]], mgr.get_chosen_building().name == names[i] and label.text.contains("[%d %s]" % [i + 1, names[i]]))
+		check("key %d chooses %s" % [i + 1, names[i]], mgr.get_chosen_building().name == names[i] and label.text.begins_with(names[i] + "."))
 		await hover(p.position)
 		check(names[i] + " previews green", p.preview == BuildingPlot.Preview.VALID)
 		if i == 1:

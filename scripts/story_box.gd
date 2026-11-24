@@ -63,10 +63,12 @@ func _process(delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not is_open():
 		return
-	if event.is_action_pressed("pad_action") or event.is_action_pressed("event_respond"):
+	# Action, the joystick click (Select) or Back press the green Continue/Close button.
+	if event.is_action_pressed("pad_action") or event.is_action_pressed("pad_select") \
+			or event.is_action_pressed("pad_back") or event.is_action_pressed("event_respond"):
 		advance()
-	# Every key is used up, so nothing behind the story reacts to it.
-	if event is InputEventKey:
+	# Every key and controller press is used up, so nothing behind the story reacts to it.
+	if event is InputEventKey or event is InputEventAction:
 		get_viewport().set_input_as_handled()
 
 

@@ -105,7 +105,7 @@ func run() -> void:
 	builder.start_placement()
 	await key(KEY_9)
 	check("key 9 chooses the Lighthouse while placing", builder.get_chosen_building().name == "Lighthouse", builder.get_chosen_building().name)
-	check("the build text lists the landmarks on their own line", label.text.contains("\nLandmarks: [9 Lighthouse]   0 Harbour   Town Hall"), label.text.replace("\n", " / "))
+	check("the build text names only the chosen building, with no numbered list", label.text.begins_with("Lighthouse.") and not label.text.contains("9 Lighthouse"), label.text.replace("\n", " / "))
 	await key(KEY_0)
 	check("key 0 chooses the Harbour", builder.get_chosen_building().name == "Harbour", builder.get_chosen_building().name)
 	var first := map.get_plot(1)
