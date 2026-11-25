@@ -30,7 +30,7 @@ func run() -> void:
 	var map: Node = main.get_node("MapManager"); var label: Label = main.get_node("UI/PlacementLabel")
 	var mine: BuildingPlot = map.get_plots()[4]
 	await key(KEY_B); await key(KEY_7)
-	check("key 7 chooses the Mine", mgr.get_chosen_building().name == "Mine" and label.text.contains("[7 Mine]") and label.text.contains("30 Wood, 15 Stone"), label.text.replace("\n", " / "))
+	check("key 7 chooses the Mine", mgr.get_chosen_building().name == "Mine" and label.text.begins_with("Mine.") and label.text.contains("30 Wood, 15 Stone"), label.text.replace("\n", " / "))
 	await key(KEY_ESCAPE)
 	var wood := r.get_amount(ResourceManager.Type.WOOD)
 	check("Mine affordable at the start", r.can_afford(mgr.get_chosen_building().cost))

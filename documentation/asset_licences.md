@@ -30,3 +30,4 @@ Poly Haven's licence page states that its assets are CC0 and can be used for any
 `icon.svg` is Godot's default project icon.
 | KayKit Medieval Builder Pack 1.0 (buildings, trees, rocks; v2) | `assets/kaykit/` | https://opengameart.org/content/kaykit-medieval-builder-pack-10 | Kay Lousberg | CC0 | No | 2026-11-21 |
 | LowPoly Animated Farm Animal Pack (cow, horse, sheep, pig; v2) | `assets/animals/` | https://opengameart.org/content/lowpoly-animated-farm-animal-pack | Quaternius | CC0 | No | 2026-11-21 |
+| Music and sound effects (calm music, sea waves, win, lose, build, event, danger, click) | `assets/audio/` | Self-made with `tools/make_sounds.py` (sine waves and filtered noise) | Island Colony team | Own work | No | 2026-11-25 |
