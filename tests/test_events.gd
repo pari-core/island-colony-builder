@@ -210,8 +210,11 @@ func run() -> void:
 	check("camp homes 10 and a House 4 more", p2.get_housing_capacity() == PopulationManager.CAMP_HOMES + PopulationManager.PEOPLE_PER_HOUSE)
 	ev2.trigger(E.ACCIDENT)
 	check("collapsed House homes nobody, the camp still does", house.is_damaged and p2.get_housing_capacity() == PopulationManager.CAMP_HOMES)
-	for x in w2.get_workers(): x.job_plot = house
-	check("no idle workers: repair refused", not ev2.respond() and ev2.get_notice().contains("No idle"))
+	var other_plots: Array = main2.get_node("MapManager").get_plots()
+	for i in w2.get_workers().size(): w2.get_workers()[i].job_plot = other_plots[i + 1]   # Busy on other buildings.
+	check("no free workers: repair refused", not ev2.respond() and ev2.get_notice().contains("No free workers"))
+	for x in w2.get_workers().slice(0, 2): x.job_plot = house
+	check("workers whose job is the collapsed building repair it themselves", ev2.respond() and ev2._find(E.ACCIDENT).crew.size() == 2)
 	main2.queue_free()
 	var main3: Node = load("res://scenes/Main.tscn").instantiate()
 	root.add_child(main3)

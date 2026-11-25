@@ -2,7 +2,7 @@
 //
 // Wiring: documentation/controller (the "wiring (with rotary encoder)" diagram).
 //   Joystick KY-023   VRx D34, VRy D35, SW D32 (= SELECT), +5V -> 3V3, GND
-//   Buttons           MENU D14, BUILD D26, ACTION D25 (other leg to GND)
+//   Buttons           BUILD D14, ACTION D26, MENU D25 (other leg to GND)
 //   Rotary encoder    CLK D4, DT D16 (RX2), SW D17 (TX2) (= BACK), + -> 3V3, GND
 //   RGB LED (4 legs)  red leg -> 220 ohm -> D27, green leg -> 220 ohm -> D33,
 //                     blue leg -> 220 ohm -> D13, longest leg -> GND
@@ -41,7 +41,7 @@ const int JOY_Y_PIN = 35;
 
 // Push buttons. All wired to GND, so pressed = LOW.
 const int BUTTON_COUNT = 5;
-const int BUTTON_PINS[BUTTON_COUNT] = {32, 25, 26, 14, 17};
+const int BUTTON_PINS[BUTTON_COUNT] = {32, 26, 14, 25, 17};   // SELECT, ACTION, BUILD, MENU, BACK
 const char* BUTTON_NAMES[BUTTON_COUNT] = {"SELECT", "ACTION", "BUILD", "MENU", "BACK"};
 
 const int ENCODER_CLK_PIN = 4;

@@ -244,9 +244,14 @@ func _free_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("pad_select"):
 		select_next_building()
 	elif event.is_action_pressed("pad_action"):
-		# With a building selected, Action opens its menu. Otherwise it answers
+		# A collapsed building waiting for repair comes first: Action sends the crew.
+		# Otherwise, with a building selected, Action opens its menu, or it answers
 		# an event, or selects the first building.
-		if not open_building_menu():
+		if _events.is_repair_waiting():
+			if not _events.respond():
+				_message = _events.get_notice() if _events.has_method("get_notice") else "Cannot repair yet"
+				_message_time = MESSAGE_SECONDS
+		elif not open_building_menu():
 			if not _events.respond():
 				select_next_building()
 	elif event.is_action_pressed("pad_back"):

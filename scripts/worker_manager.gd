@@ -162,6 +162,12 @@ func send_repair_crew(plot: BuildingPlot, max_count: int) -> Array[Worker]:
 		if crew.size() < max_count and worker.is_idle():
 			worker.repair_plot = plot
 			crew.append(worker)
+	# Workers whose job is the collapsed building are right there and have nothing
+	# to do: they help repair it, then go back to work.
+	for worker in _workers:
+		if crew.size() < max_count and worker.job_plot == plot and worker.repair_plot == null and worker.treatment_plot == null:
+			worker.repair_plot = plot
+			crew.append(worker)
 	if not crew.is_empty():
 		_jobs_changed()
 	return crew

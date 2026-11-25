@@ -17,9 +17,9 @@ no resistors are needed). The joystick and encoder are powered from 3V3, never
 | Joystick VRx | 34 | Left / right: move, pan | Left / Right arrow |
 | Joystick VRy | 35 | Up / down: move, pan | Up / Down arrow |
 | Joystick press (SW) | 32 | Select: next building | Tab |
-| Action button | 25 | Confirm, accept, open | Space |
-| Build button | 26 | Start / stop building | B |
-| Menu button | 14 | Pause menu | M |
+| Action button | 26 | Confirm, accept, open | Space |
+| Build button | 14 | Start / stop building | B |
+| Menu button | 25 | Pause menu | M |
 | Encoder CLK | 4 | Turn: zoom, scroll a list | - and = |
 | Encoder DT | 16 (RX2) | (direction of the turn) | |
 | Encoder push (SW) | 17 (TX2) | Back / cancel / decline | Backspace |

@@ -232,6 +232,12 @@ func get_wait_reason() -> String:
 
 
 # True while an outbreak or a collapsed building still needs dealing with.
+# True while a collapsed building waits for the player to send a repair crew.
+func is_repair_waiting() -> bool:
+	var accident = _find(Type.ACCIDENT)
+	return accident != null and accident.plot != null and accident.crew.is_empty()
+
+
 func is_waiting_for_player() -> bool:
 	var accident = _find(Type.ACCIDENT)
 	return is_active(Type.DISEASE) or (accident != null and accident.plot != null)
@@ -356,7 +362,7 @@ func respond() -> bool:
 			return _fail("Not enough resources to repair")
 		var crew := _workers.send_repair_crew(accident.plot, REPAIR_CREW)
 		if crew.is_empty():
-			return _fail("No idle workers: remove a worker from a job first (K)")
+			return _fail("No free workers: remove a worker from a job first")
 		_resources.spend(REPAIR_COST)
 		accident.crew = crew
 		events_changed.emit()
